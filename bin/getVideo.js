@@ -38,36 +38,39 @@ async function loadPage(name, url) {
   return cheerio.load(body);
 }
 
-module.exports = async () => {
+async function getVideoInfo() {
   const $ = await loadPage('main', STARTUP_CLASS_URL);
-
-  const info = [];
-  $('.list-group-item').each((index, ele) => {
+  return $('.list-group-item').map((index, ele) => {
     const $ele = $(ele);
-    const title = $ele.find('.list-group-item-heading').text().trim();
-    const subPage = $ele.attr('href').trim();
-    info.push({
-      title,
-      subPage,
-    });
-  });
+    return {
+      title: $ele.find('.list-group-item-heading').text().trim(),
+      subPage: $ele.attr('href').trim(),
+    };
+  }).get();
+}
 
-  console.log(info);
+async function getVideoLink(info) {
+  const $ = await loadPage(info.title, `${STARTUP_CLASS_URL}${info.subPage}`);
+  const src = $('video source').attr('src').trim();
+  return decodeURIComponent(src);
+}
 
-  const srcArr = info.map(async (item) => {
-    const $sub = await loadPage(item.title, `${STARTUP_CLASS_URL}${item.subPage}`);
-    const src = $sub('video source').attr('src').trim();
-    return decodeURIComponent(src);
-  });
+(async () => {
+  const videoInfo = await getVideoInfo();
+  Promise
+    .all(
+      videoInfo.map(async (info) => {
+        const link = await getVideoLink(info);
+        return link;
+      }),
+    )
+    .then((videoLinks) => {
+      console.log(videoLinks);
+    })
+    .catch(err => console.error(err));
 
-  console.log(srcArr);
-
-  const $sub = await loadPage(info[0].title, `${STARTUP_CLASS_URL}${info[0].subPage}`);
-  const src = $sub('video source').attr('src').trim();
-  const url = decodeURIComponent(src);
-
-  request(url)
-    .on('error', err => console.log(err))
-    .pipe(fs.createWriteStream('asd.mp4'))
-    .on('finish', () => console.log('视频下载成功'));
-};
+  // request(url)
+  //   .on('error', err => console.log(err))
+  //   .pipe(fs.createWriteStream('asd.mp4'))
+  //   .on('finish', () => console.log('视频下载成功'));
+})();
