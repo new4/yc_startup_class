@@ -1,8 +1,12 @@
 const cheerio = require('cheerio');
-const fs = require('fs');
-const request = require('request');
+const chainAsync = require('./chainAsync');
+const download = require('./download');
 
 const {
+  spinner: {
+    logWithSpinner,
+    stopSpinner,
+  },
   requestP,
   colorStr: {
     yellow,
@@ -56,21 +60,22 @@ async function getVideoLink(info) {
 }
 
 (async () => {
+  logWithSpinner('get video info ...');
   const videoInfo = await getVideoInfo();
   Promise
     .all(
       videoInfo.map(async (info) => {
         const link = await getVideoLink(info);
-        return link;
+        return { title: info.title, link };
       }),
     )
     .then((videoLinks) => {
-      console.log(videoLinks);
+      stopSpinner('get video info success!');
+      const fns = videoLinks.map(({ title, link }) => async (next) => {
+        await download(title, link);
+        next && next();
+      });
+      chainAsync(fns);
     })
     .catch(err => console.error(err));
-
-  // request(url)
-  //   .on('error', err => console.log(err))
-  //   .pipe(fs.createWriteStream('asd.mp4'))
-  //   .on('finish', () => console.log('视频下载成功'));
 })();

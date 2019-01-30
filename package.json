@@ -19,7 +19,7 @@
   },
   "homepage": "https://github.com/new4/yc_startup_class#readme",
   "dependencies": {
-    "@new4/utils": "0.0.27",
+    "@new4/utils": "0.0.30",
     "cheerio": "^1.0.0-rc.2",
     "progress": "^2.0.3",
     "request": "^2.88.0"

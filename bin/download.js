@@ -1,32 +1,32 @@
 const fs = require('fs');
 const request = require('request');
-
 const ProgressBar = require('progress');
 
 const {
+  log: {
+    logBoth,
+  },
+  colorStr: {
+    cyan,
+    yellow,
+  },
   prettyBytes,
 } = require('@new4/utils');
 
-const URL = 'http://7oxett.com1.z0.glb.clouddn.com/video/1_cn_new.mp4';
-
-request(URL)
-  .on('response', (response) => {
-    console.log(response.statusCode); // 200
-    console.log(prettyBytes(response.headers['content-length'], 5, false)); // 'image/png'
-
-    const len = parseInt(response.headers['content-length'], 10);
-
-    console.log();
-    const bar = new ProgressBar('  downloading [:bar] :percent :etas', {
-      complete: '=',
-      incomplete: ' ',
-      width: 60,
-      total: len,
-    });
-
-    response.on('data', chunk => bar.tick(chunk.length));
-    response.on('end', () => console.log('response end \n'));
-  })
-  .on('error', err => console.log(err))
-  .pipe(fs.createWriteStream('asd.mp4'))
-  .on('finish', () => console.log('视频下载成功'));
+module.exports = (name, downloadUrl) => new Promise((resolve, reject) => {
+  request(downloadUrl)
+    .on('response', (response) => {
+      const respLength = response.headers['content-length'];
+      logBoth(cyan(`下载 ${yellow(name)} 大小: ${yellow(prettyBytes(respLength, 5, false))}`));
+      const bar = new ProgressBar('  :bar :percent', {
+        complete: '\u001b[102m \u001b[0m', // Bright Green
+        incomplete: '\u001b[100m \u001b[0m', // Bright Black
+        width: 60,
+        total: parseInt(respLength, 10),
+      });
+      response.on('data', chunk => bar.tick(chunk.length));
+    })
+    .on('error', () => reject()) // 懒...
+    .pipe(fs.createWriteStream(`video/${name}.mp4`))
+    .on('finish', () => resolve()); // 懒...
+});
