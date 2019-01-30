@@ -1,8 +1,8 @@
 const cheerio = require('cheerio');
-const chainAsync = require('./chainAsync');
 const download = require('./download');
 
 const {
+  chainAsync,
   spinner: {
     logWithSpinner,
     stopSpinner,
