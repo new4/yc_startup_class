@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "video": "node scripts/getVideo.js",
+    "myTest": "node scripts/myTest.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
