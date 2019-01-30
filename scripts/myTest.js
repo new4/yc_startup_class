@@ -5,7 +5,10 @@ const {
 const videoLinks = require('../.cache/videoLinks.json');
 const download = require('./download');
 
-const fns = videoLinks.map(({ title, link }) => async (next) => {
+const fns = videoLinks.map(({
+  title,
+  link,
+}) => async (next) => {
   await download(title, link);
   next && next();
 });
