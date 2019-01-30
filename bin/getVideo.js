@@ -2,6 +2,7 @@ const cheerio = require('cheerio');
 const download = require('./download');
 
 const {
+  cache: Cache,
   chainAsync,
   spinner: {
     logWithSpinner,
@@ -20,6 +21,8 @@ const {
 } = require('@new4/utils');
 
 const STARTUP_CLASS_URL = 'http://www.startupclass.club';
+
+const cache = new Cache();
 
 async function loadPage(name, url) {
   let response;
@@ -71,6 +74,7 @@ async function getVideoLink(info) {
     )
     .then((videoLinks) => {
       stopSpinner('get video info success!');
+      cache.save('videoLinks', videoLinks);
       const fns = videoLinks.map(({ title, link }) => async (next) => {
         await download(title, link);
         next && next();

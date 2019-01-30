@@ -20,6 +20,8 @@ npm run video
 yarn video
 ```
 
+会将所有视频的名字和对应下载链接信息保存到文件 `.cache/videoLinks.json` 中去
+
 下载过程如图：
 
 ![download](./assets/yc.png)
