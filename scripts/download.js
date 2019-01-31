@@ -22,9 +22,19 @@ const {
   videoDir,
 } = require('./config');
 
+const ctx = {};
+
+// 中途收到 SIGINT 信号，删除当前正在下载的文件
+process.on('SIGINT', () => {
+  ctx.bar.terminate();
+  faillogBoth(`中途退出，删除当前未完成的文件 ${ctx.videoFile}`);
+  fs.unlinkSync(ctx.videoFile);
+  process.exit(1);
+});
+
 module.exports = (name, downloadUrl, times) => new Promise((resolve) => {
   let failed = false;
-  const videoFile = `${videoDir}/${name}`;
+  ctx.videoFile = `${videoDir}/${name}`;
   request(downloadUrl)
     .on('response', (response) => {
       const respLength = response.headers['content-length'];
@@ -36,39 +46,39 @@ module.exports = (name, downloadUrl, times) => new Promise((resolve) => {
       log(cyan(`下载 ${yellow(name)} ${retry}`));
       logAfter(size);
 
-      const bar = new ProgressBar('  :bar :percent', {
+      ctx.bar = new ProgressBar('  :bar :percent', {
         complete: '\u001b[102m \u001b[0m', // Bright Green
         incomplete: '\u001b[100m \u001b[0m', // Bright Black
         width: 60,
         total: parseInt(respLength, 10),
       });
 
-      response.on('data', chunk => bar.tick(chunk.length));
+      response.on('data', chunk => ctx.bar.tick(chunk.length));
 
       response.on('end', () => {
         if (!response.complete) {
-          bar.terminate();
+          ctx.bar.terminate();
           failed = true;
         }
       });
 
       response.on('error', () => {
-        bar.terminate();
+        ctx.bar.terminate();
         failed = true;
       }); // 懒...
 
       // 中途收到 SIGINT 信号，删除当前正在下载的文件
       process.on('SIGINT', () => {
-        bar.terminate();
-        faillogBoth('中途退出，删除当前未完成的文件');
-        fs.unlinkSync(videoFile);
+        ctx.bar.terminate();
+        faillogBoth(`中途退出，删除当前未完成的文件 ${ctx.videoFile}`);
+        fs.unlinkSync(ctx.videoFile);
         process.exit(1);
       });
     })
-    .pipe(fs.createWriteStream(videoFile))
+    .pipe(fs.createWriteStream(ctx.videoFile))
     .on('finish', () => {
       if (failed) {
-        fs.unlinkSync(videoFile);
+        fs.unlinkSync(ctx.videoFile);
         faillogBoth('下载失败，删除失败的文件，稍后自动重新下载');
       } else {
         successlogBoth(`${yellow(name)} 下载成功!`);
