@@ -18,7 +18,9 @@ const {
   prettyBytes,
 } = require('@new4/utils');
 
-const { videoDir } = require('./config');
+const {
+  videoDir,
+} = require('./config');
 
 module.exports = (name, downloadUrl, times) => new Promise((resolve) => {
   let failed = false;
@@ -54,6 +56,14 @@ module.exports = (name, downloadUrl, times) => new Promise((resolve) => {
         bar.terminate();
         failed = true;
       }); // 懒...
+
+      // 中途收到 SIGINT 信号，删除当前正在下载的文件
+      process.on('SIGINT', () => {
+        bar.terminate();
+        faillogBoth('中途退出，删除当前未完成的文件');
+        fs.unlinkSync(videoFile);
+        process.exit(1);
+      });
     })
     .pipe(fs.createWriteStream(videoFile))
     .on('finish', () => {
