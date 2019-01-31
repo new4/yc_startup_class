@@ -22,7 +22,7 @@ const { videoDir } = require('./config');
 
 module.exports = (name, downloadUrl, times) => new Promise((resolve) => {
   let failed = false;
-  const videoFile = `${videoDir}/${name}.mp4`;
+  const videoFile = `${videoDir}/${name}`;
   request(downloadUrl)
     .on('response', (response) => {
       const respLength = response.headers['content-length'];
