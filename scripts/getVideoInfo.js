@@ -1,11 +1,13 @@
 const cheerio = require('cheerio');
 
 const {
+  cache: Cache,
   requestP,
   colorStr: {
     yellow,
   },
   log: {
+    successlogBoth,
     faillogBoth,
   },
   shouldBe: {
@@ -21,9 +23,7 @@ const {
   websiteUrl,
 } = require('./config');
 
-const {
-  cache,
-} = require('./utils');
+const cache = new Cache();
 
 async function loadPage(name, url) {
   let response;
@@ -69,23 +69,33 @@ async function getVideoLink(info) {
   return decodeURIComponent(src);
 }
 
-module.exports = async () => {
+/**
+ * 爬页面获取视频列表信息（视频名+下载链接）
+ * 参数 useCache 指定优先使用 cache 中的数据
+ */
+module.exports = useCache => new Promise(async (resolve) => {
+  const videoInfo = cache.get('videoInfo');
+  if (useCache && videoInfo) {
+    successlogBoth('get video info from cache');
+    resolve(videoInfo);
+    return;
+  }
   logWithSpinner('get video info ...');
   const videoList = await getVideoList();
-  return new Promise((resolve) => {
-    Promise
-      .all(videoList.map(async (info) => {
-        const link = await getVideoLink(info);
-        return {
-          title: info.title,
-          link,
-        };
-      }))
-      .then((videoInfo) => {
-        stopSpinner('get video info success!');
-        cache.save('videoInfo', videoInfo);
-        resolve(videoInfo);
-      })
-      .catch(err => console.error(err));
-  });
-};
+  Promise
+    .all(videoList.map(async (info, index) => {
+      const link = await getVideoLink(info);
+      return {
+        index: index + 1, // 视频序号
+        title: info.title, // 视频标题
+        link, // 下载链接
+        times: 1, // 下载次数
+      };
+    }))
+    .then((videoinfo) => {
+      stopSpinner('get video info success!');
+      cache.save('videoinfo', videoinfo);
+      resolve(videoinfo);
+    })
+    .catch(err => console.error(err));
+});

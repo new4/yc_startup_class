@@ -4,7 +4,7 @@
   "description": "learn YC startup class on http://www.startupclass.club/",
   "main": "index.js",
   "scripts": {
-    "video": "node scripts/getVideo.js",
+    "video": "node scripts/allVideo.js",
     "myTest": "node scripts/myTest.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
