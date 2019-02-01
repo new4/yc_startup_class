@@ -34,24 +34,12 @@ const getVideoInfo = require('./getVideoInfo');
     [],
   );
 
+  // 逐个下载
   while (videoInfo.length) {
-    const {
-      index,
-      title,
-      videoName,
-      link,
-      retry,
-    } = videoInfo.shift();
-    const failed = await download(videoName, link, retry); // eslint-disable-line
-    if (failed) {
-      // 失败了加入到队列尾部，随后会重新下载
-      videoInfo.push({
-        index,
-        title,
-        link,
-        retry: retry + 1,
-      });
-    }
+    const curr = videoInfo.shift();
+    const failed = await download(curr.videoName, curr.link, curr.retry); // eslint-disable-line
+    // 失败了加入到队列尾部，随后会重新下载
+    failed && videoInfo.push(Object.assign({}, curr, { retry: curr.retry + 1 }));
   }
 
   successlogBoth('全部下载完成!');

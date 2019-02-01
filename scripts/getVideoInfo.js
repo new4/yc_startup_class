@@ -32,8 +32,8 @@ async function getVideoList() {
 /**
  * 获取各视频页面中视频的链接
  */
-async function getVideoLink(info) {
-  const $ = await loadPage(info.title, `${websiteUrl}${info.subPage}`);
+async function getVideoLink(name, url) {
+  const $ = await loadPage(name, url);
   const src = $('video source').attr('src').trim();
   return decodeURIComponent(src);
 }
@@ -52,9 +52,12 @@ module.exports = () => new Promise(async (resolve) => {
   const videoList = await getVideoList();
   Promise
     .all(videoList.map(async (info, i) => {
-      const link = await getVideoLink(info);
+      const {
+        title,
+        subPage,
+      } = info;
+      const link = await getVideoLink(title, `${websiteUrl}${subPage}`);
       const index = i + 1;
-      const { title } = info;
       const videoName = videoNameFormat(index, title);
       return {
         index, // 视频序号
