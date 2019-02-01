@@ -1,16 +1,6 @@
-const cheerio = require('cheerio');
-
 const {
-  requestP,
-  colorStr: {
-    yellow,
-  },
   log: {
     successlogBoth,
-    faillogBoth,
-  },
-  shouldBe: {
-    sb,
   },
   spinner: {
     logWithSpinner,
@@ -19,33 +9,11 @@ const {
 } = require('@new4/utils');
 
 const {
-  websiteUrl,
-} = require('./config');
-
-const {
   cache,
+  loadPage,
+  websiteUrl,
+  videoNameFormat,
 } = require('./utils');
-
-async function loadPage(name, url) {
-  let response;
-  let body;
-  try {
-    [response, body] = await requestP({
-      url,
-      timeout: 15000,
-    });
-
-    sb(
-      () => response.statusCode === 200,
-      `[${name} error] res status not 200: ${yellow(url)}`,
-    );
-  } catch (e) {
-    faillogBoth(`[${e.message}] url: ${yellow(url)}`);
-    process.exit(1);
-  }
-
-  return cheerio.load(body);
-}
 
 /**
  * 获取主页的视频列表信息
@@ -72,11 +40,10 @@ async function getVideoLink(info) {
 
 /**
  * 爬页面获取视频列表信息（视频名+下载链接）
- * 参数 useCache 指定优先使用 cache 中的数据
  */
-module.exports = useCache => new Promise(async (resolve) => {
+module.exports = () => new Promise(async (resolve) => {
   const videoInfo = cache.get('videoInfo');
-  if (useCache && videoInfo) {
+  if (videoInfo) {
     successlogBoth('get video info from cache');
     resolve(videoInfo);
     return;
@@ -84,13 +51,17 @@ module.exports = useCache => new Promise(async (resolve) => {
   logWithSpinner('get video info ...');
   const videoList = await getVideoList();
   Promise
-    .all(videoList.map(async (info, index) => {
+    .all(videoList.map(async (info, i) => {
       const link = await getVideoLink(info);
+      const index = i + 1;
+      const { title } = info;
+      const videoName = videoNameFormat(index, title);
       return {
-        index: index + 1, // 视频序号
-        title: info.title, // 视频标题
+        index, // 视频序号
+        title, // 视频标题
+        videoName, // 视频文件名
         link, // 下载链接
-        times: 1, // 下载次数
+        retry: 0, // 重新下载的次数
       };
     }))
     .then((videoinfo) => {

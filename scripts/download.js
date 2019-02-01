@@ -20,37 +20,37 @@ const {
 
 const {
   videoDir,
-} = require('./config');
+} = require('./utils');
 
 // 当前下载项的上下文
 const ctx = {
   /**
    * bar - 进度条
-   * videoFile - 视频文件
+   * filePath - 视频文件
    */
 };
 
 // 中途收到 SIGINT 信号，删除当前正在下载的文件
 process.on('SIGINT', () => {
   ctx.bar.terminate();
-  faillogBoth(`中途退出，删除当前未完成的文件 ${ctx.videoFile}`);
-  fs.unlinkSync(ctx.videoFile);
+  faillogBoth(`中途退出，删除当前未完成的文件 ${yellow(ctx.filePath)}`);
+  fs.unlinkSync(ctx.filePath);
   process.exit(1);
 });
 
-module.exports = (name, downloadUrl, times) => new Promise((resolve) => {
+module.exports = (name, downloadUrl, retry) => new Promise((resolve) => {
   let failed = false;
-  ctx.videoFile = `${videoDir}/${name}`;
+  ctx.filePath = `${videoDir}/${name}`;
   request(downloadUrl)
     .on('response', (response) => {
       const respLength = response.headers['content-length'];
-      const splitLine = '-'.repeat(70);
-      const size = cyan(`大小 ${yellow(prettyBytes(respLength, 5))}`);
-      const retry = times > 1 ? green(`重新下载: 第 ${yellow(times)} 次重试`) : '';
+      const splitLine = grey('-'.repeat(70));
+      const sizeTip = cyan(`大小 ${yellow(prettyBytes(respLength, 5))}`);
+      const retryTip = retry ? green(`重新下载: 第 ${yellow(retry)} 次重试`) : '';
 
-      log(grey(splitLine));
-      log(cyan(`下载 ${yellow(name)} ${retry}`));
-      logAfter(size);
+      log(splitLine);
+      log(cyan(`下载 ${yellow(name)} ${retryTip}`));
+      logAfter(sizeTip);
 
       ctx.bar = new ProgressBar('  :bar :percent', {
         complete: '\u001b[102m \u001b[0m', // Bright Green
@@ -73,10 +73,10 @@ module.exports = (name, downloadUrl, times) => new Promise((resolve) => {
         failed = true;
       }); // 懒...
     })
-    .pipe(fs.createWriteStream(ctx.videoFile))
+    .pipe(fs.createWriteStream(ctx.filePath))
     .on('finish', () => {
       if (failed) {
-        fs.unlinkSync(ctx.videoFile);
+        fs.unlinkSync(ctx.filePath);
         faillogBoth('下载失败，删除失败的文件，稍后自动重新下载');
       } else {
         successlogBoth(`${yellow(name)} 下载成功!`);

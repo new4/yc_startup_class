@@ -7,7 +7,7 @@
     "video": "node scripts/allVideo.js",
     "clean:cache": "rm -rf ./.cache",
     "clean:video": "rm -rf ./video/*.mp4",
-    "clean:all": "yarn clean:cache && yarn clean:video",
+    "clean": "yarn clean:cache && yarn clean:video",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
