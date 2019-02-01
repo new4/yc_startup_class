@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "video": "node scripts/allVideo.js",
+    "snapshoot": "node scripts/snapshoot.js",
     "clean:cache": "rm -rf ./.cache",
     "clean:video": "rm -rf ./video/*.mp4",
     "clean": "yarn clean:cache && yarn clean:video",
