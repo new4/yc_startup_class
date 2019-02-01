@@ -5,13 +5,19 @@
   "main": "index.js",
   "scripts": {
     "video": "node scripts/allVideo.js",
+    "clean:cache": "rm -rf ./.cache",
+    "clean:video": "rm -rf ./video/*.mp4",
+    "clean:all": "yarn clean:cache && yarn clean:video",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/new4/yc_startup_class.git"
   },
-  "keywords": [],
+  "keywords": [
+    "new4",
+    "YC Startup Class"
+  ],
   "author": "new4",
   "license": "MIT",
   "bugs": {

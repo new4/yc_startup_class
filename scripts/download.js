@@ -22,7 +22,13 @@ const {
   videoDir,
 } = require('./config');
 
-const ctx = {};
+// 当前下载项的上下文
+const ctx = {
+  /**
+   * bar - 进度条
+   * videoFile - 视频文件
+   */
+};
 
 // 中途收到 SIGINT 信号，删除当前正在下载的文件
 process.on('SIGINT', () => {
@@ -40,7 +46,7 @@ module.exports = (name, downloadUrl, times) => new Promise((resolve) => {
       const respLength = response.headers['content-length'];
       const splitLine = '-'.repeat(70);
       const size = cyan(`大小 ${yellow(prettyBytes(respLength, 5))}`);
-      const retry = times > 1 ? green(`重新下载: 第 ${yellow(times)} 次`) : '';
+      const retry = times > 1 ? green(`重新下载: 第 ${yellow(times)} 次重试`) : '';
 
       log(grey(splitLine));
       log(cyan(`下载 ${yellow(name)} ${retry}`));
@@ -66,14 +72,6 @@ module.exports = (name, downloadUrl, times) => new Promise((resolve) => {
         ctx.bar.terminate();
         failed = true;
       }); // 懒...
-
-      // 中途收到 SIGINT 信号，删除当前正在下载的文件
-      process.on('SIGINT', () => {
-        ctx.bar.terminate();
-        faillogBoth(`中途退出，删除当前未完成的文件 ${ctx.videoFile}`);
-        fs.unlinkSync(ctx.videoFile);
-        process.exit(1);
-      });
     })
     .pipe(fs.createWriteStream(ctx.videoFile))
     .on('finish', () => {
