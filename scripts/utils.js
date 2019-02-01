@@ -68,4 +68,5 @@ module.exports = {
   loadPage,
   getExistVideos,
   videoNameFormat,
+  snapshootDir: underPath('root', 'assets/_snapshot'),
 };

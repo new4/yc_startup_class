@@ -6,6 +6,7 @@
   "scripts": {
     "video": "node scripts/allVideo.js",
     "snapshoot": "node scripts/snapshoot.js",
+    "readme": "node scripts/readme.js",
     "clean:cache": "rm -rf ./.cache",
     "clean:video": "rm -rf ./video/*.mp4",
     "clean": "yarn clean:cache && yarn clean:video",
@@ -25,6 +26,11 @@
     "url": "https://github.com/new4/yc_startup_class/issues"
   },
   "homepage": "https://github.com/new4/yc_startup_class#readme",
+  "husky": {
+    "hooks": {
+      "pre-commit": "node scripts/snapshoot.js && node scripts/readme.js"
+    }
+  },
   "dependencies": {
     "@new4/utils": "0.0.31",
     "cheerio": "^1.0.0-rc.2",
@@ -33,6 +39,7 @@
   },
   "devDependencies": {
     "eslint": "^5.12.1",
-    "eslint-config-new4-eslintrc": "^0.4.4"
+    "eslint-config-new4-eslintrc": "^0.4.4",
+    "husky": "^1.3.1"
   }
 }
