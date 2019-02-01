@@ -1,7 +1,6 @@
 const cheerio = require('cheerio');
 
 const {
-  cache: Cache,
   requestP,
   colorStr: {
     yellow,
@@ -23,7 +22,9 @@ const {
   websiteUrl,
 } = require('./config');
 
-const cache = new Cache();
+const {
+  cache,
+} = require('./utils');
 
 async function loadPage(name, url) {
   let response;
