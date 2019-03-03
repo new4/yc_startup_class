@@ -26,7 +26,7 @@ let markdown = [
 
 getExistFiles(snapshootDir).sort()
   .map(name => ({
-    name: name.trim().replace('.mindnode.jpg'),
+    name: name.trim().replace('.mindnode.jpg', ''),
     path: `.${underPath(snapshootDir, name).replace(underPath('root'), '')}`.replace(/\s/g, '&#32;'),
   }))
   .forEach((jpginfo) => {
